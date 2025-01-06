@@ -1,0 +1,4 @@
+.env
+node_modules
+cookies.txt
+wifi_scheduler.log
