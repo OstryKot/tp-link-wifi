@@ -59,7 +59,6 @@ async function login() {
       console.log('Odpowiedź serwera:', response.data);
 
       // Pobranie stok z odpowiedzi
-      //const stok = response.data.stok; // Zakładamy, że stok jest zwracany w odpowiedzi
       const stok = response.data.data.stok;
       if (!stok) {
         throw new Error('Nie znaleziono stok w odpowiedzi serwera.');
@@ -113,7 +112,6 @@ async function enableWifi(stok) {
 
     if (response.status === 200) {
       console.log('Wi-Fi włączone pomyślnie!');
-      //console.log('Odpowiedź serwera:', response.data);
     } else {
       console.log('Wystąpił błąd podczas włączania Wi-Fi. Kod statusu:', response.status);
     }
@@ -154,7 +152,6 @@ async function disableWifi(stok) {
 
     if (response.status === 200) {
       console.log('Wi-Fi wyłączone pomyślnie!');
-      //console.log('Odpowiedź serwera:', response.data);
     } else {
       console.log('Wystąpił błąd podczas wyłączania Wi-Fi. Kod statusu:', response.status);
     }
@@ -164,14 +161,18 @@ async function disableWifi(stok) {
 }
 
 // Funkcja do planowania włączenia/wyłączenia Wi-Fi
-async function scheduleWifiAction(stok, action, cronExpression) {
+async function scheduleWifiAction(action, cronExpression) {
   const job = schedule.scheduleJob(cronExpression, async () => {
-    if (action === 'enable') {
-      await enableWifi(stok);
-    } else if (action === 'disable') {
-      await disableWifi(stok);
-    } else {
-      console.log('Nieznana akcja. Dostępne akcje: enable, disable');
+    const stok = await login(); // Logowanie przed każdą akcją
+
+    if (stok) {
+      if (action === 'enable') {
+        await enableWifi(stok);
+      } else if (action === 'disable') {
+        await disableWifi(stok);
+      } else {
+        console.log('Nieznana akcja. Dostępne akcje: enable, disable');
+      }
     }
   });
 
@@ -180,23 +181,11 @@ async function scheduleWifiAction(stok, action, cronExpression) {
 
 // Główna funkcja
 async function main() {
-  const stok = await login();
+  // Przykład: Zaplanuj włączenie Wi-Fi codziennie o 8:00 rano
+  scheduleWifiAction('enable', '0 8 * * *');
 
-  if (stok) {
-    // Przykład: Włącz Wi-Fi teraz
-    //await enableWifi(stok);
-
-    // Przykład: Wyłącz Wi-Fi teraz
-    // await disableWifi(stok);
-
-    // Przykład: Zaplanuj włączenie Wi-Fi codziennie o 8:00 rano
-    scheduleWifiAction(stok, 'enable', '0 7 * * *');
-    //scheduleWifiAction(stok, 'enable', '28 14 * * *');
-
-    // Przykład: Zaplanuj wyłączenie Wi-Fi codziennie o 23:00 wieczorem
-    scheduleWifiAction(stok, 'disable', '0 23 * * *');
-    //scheduleWifiAction(stok, 'disable', '26 14 * * *');
-  }
+  // Przykład: Zaplanuj wyłączenie Wi-Fi codziennie o 23:00 wieczorem
+  scheduleWifiAction('disable', '0 23 * * *');
 }
 
 // Uruchomienie głównej funkcji
