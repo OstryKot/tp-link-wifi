@@ -1,6 +1,6 @@
 ### Stworzenie bota, który będzie wyłączał/włączał wifi na routerze w ustalonych godzinach.
 
-Jako, że router nie posiada natywnie opcji schedulera, który by umożliwił ustawienie harmonogramu włączania i wyłączania wifi zasymulować użytkownika, który loguje się do routera a następnie ręcznie wyłącza/włącza wifi.
+Jako, że router nie posiada natywnie opcji schedulera, który by umożliwił ustawienie harmonogramu włączania i wyłączania wifi, należy zasymulować użytkownika, który loguje się do routera a następnie ręcznie wyłącza/włącza wifi.
 
 Aby osiągnąć taki efekt, należy przeprowadzić reverse engeeniering. Analizujemy jak działa protokół komunikacji routera poprzez:
 
