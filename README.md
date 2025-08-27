@@ -1,26 +1,26 @@
-### Stworzenie bota, który będzie wyłączał/włączał wifi na routerze w ustalonych godzinach.
+### Creating a bot to turn WiFi on/off on the router at scheduled times
 
-Jako, że router nie posiada natywnie opcji schedulera, który by umożliwił ustawienie harmonogramu włączania i wyłączania wifi, należy zasymulować użytkownika, który loguje się do routera a następnie ręcznie wyłącza/włącza wifi.
+Since the router does not natively provide a scheduler option to enable or disable WiFi at specific times, it is necessary to simulate a user logging into the router and manually switching WiFi on or off.
 
-Aby osiągnąć taki efekt, należy przeprowadzić reverse engeeniering. Analizujemy jak działa protokół komunikacji routera poprzez:
+To achieve this, reverse engineering must be performed. I analyze how the router’s communication protocol works by:
 
-1. Obserwację ruchu sieciowego z przeglądarki
-2. Testowanie różnych formatów żądań
-3. Analizę odpowiedzi routera
-4. Odtwarzanie procesu autoryzacji
+1. Observing network traffic from the browser  
+2. Testing different request formats  
+3. Analyzing router responses  
+4. Reproducing the authentication process  
 
-### Po przeanalizowaniu nagłówków http testujemy to co udało nam się wywnioskować:
+### After analyzing the HTTP headers, I test what I have deduced:
 
-#### Włączanie wifi
+#### WiFi enabled
 curl -X POST "http://192.168.0.1/cgi-bin/luci/;stok=cfcd0828c510ba9e52d977eb905cd368/admin/wireless?form=wireless_2g&form=wireless_5g" -H "Accept: application/json, text/javascript, */*; q=0.01" -H "Accept-Encoding: gzip, deflate" -H "Accept-Language: en-US,en" -H "Connection: keep-alive" -H "Content-Length: 386" -H "Content-Type: application/x-www-form-urlencoded; charset=UTF-8" -H "Cookie: sysauth=d9291cd1fa80a126989bacc27c4e7041" -H "Host: 192.168.0.1" -H "Origin: http://192.168.0.1" -H "Referer: http://192.168.0.1/webpages/index.html" -H "Sec-GPC: 1" -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" -H "X-Requested-With: XMLHttpRequest" -d "operation=write&wireless_2g_enable=on&wireless_2g_ssid=GNET_D4&wireless_2g_hidden=off&wireless_2g_encry_password=10101010&wireless_2g_psk_key=10101010&wireless_5g_enable=off&wireless_5g_ssid=GNET_D_5G&wireless_5g_hidden=off&wireless_5g_encry_password=10101010&wireless_5g_psk_key=10101010&wireless_2g_disabled_all=off&wireless_5g_disabled_all=on&wireless_5g_2_disabled_all=on"
 
-#### Wyłączanie wifi
+#### WiFi disabled
 curl -X POST "http://192.168.0.1/cgi-bin/luci/;stok=cfcd0828c510ba9e52d977eb905cd368/admin/wireless?form=wireless_2g&form=wireless_5g" -H "Accept: application/json, text/javascript, */*; q=0.01" -H "Accept-Encoding: gzip, deflate" -H "Accept-Language: en-US,en" -H "Connection: keep-alive" -H "Content-Length: 386" -H "Content-Type: application/x-www-form-urlencoded; charset=UTF-8" -H "Cookie: sysauth=d9291cd1fa80a126989bacc27c4e7041" -H "Host: 192.168.0.1" -H "Origin: http://192.168.0.1" -H "Referer: http://192.168.0.1/webpages/index.html" -H "Sec-GPC: 1" -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" -H "X-Requested-With: XMLHttpRequest" -d "operation=write&wireless_2g_enable=off&wireless_2g_ssid=GNET_D4&wireless_2g_hidden=off&wireless_2g_encry_password=10101010&wireless_2g_psk_key=10101010&wireless_5g_enable=off&wireless_5g_ssid=GNET_D4_5G&wireless_5g_hidden=off&wireless_5g_encry_password=10101010&wireless_5g_psk_key=10101010&wireless_2g_disabled_all=on&wireless_5g_disabled_all=on&wireless_5g_2_disabled_all=on"
 
-#### Login daje nam taki rezultat
+#### The login gives the following result
 operation=login&username=admin&password=103943f6cb558f45fcf218c4545459f4bc5edd694813f754009190151cd757a7f0d501dde50a8f05937a56286810dc44434637948ef45454565ade9089fdb177d7c33be8b1ebd69826f9d30b84eccf97b0be2a5d012009268b59478de4d08bc6a4075555483eb2f6271e13d34ab729d7273a4f85791bac70f7e6054c1bc160ea
 
-#### Testujemy logowanie, uzyskujemy cookie oraz stok potrzebne do autoryzacji
+#### Now test the login process, obtaining the cookie and token required for authentication
 
 curl -X POST \
   "http://192.168.0.1/cgi-bin/luci/;stok=/login?form=login" \
@@ -43,7 +43,7 @@ curl -X POST \
 
 sysauth	41f4b5055c3e079f07381a408e907c08
 
-#### Piszemy bota, którego uruchamiamy na przykład na RaspberryPi.
+#### Create a bot that we run, for example, on a Raspberry Pi.
 
-Skrypt działa w tle jako usługa uruchomiona za pomocą na przykład pm2
+The script runs in the background as a service, launched with a tool such as pm2.
 
